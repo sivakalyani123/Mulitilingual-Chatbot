@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LinguaBot — Multilingual AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #f7f8fc;
+  --bg2: #eef0f8;
+  --white: #ffffff;
+  --surface: #ffffff;
+  --surface2: #f0f2fa;
+  --border: #e2e5f1;
+  --border2: #d0d4ea;
+  --accent: #4f6ef7;
+  --accent-soft: #eef0ff;
+  --accent2: #22c9a0;
+  --accent2-soft: #e6faf5;
+  --accent3: #f97b6b;
+  --text: #1a1d2e;
+  --text2: #5c6080;
+  --text3: #9196b8;
+  --shadow: 0 2px 12px rgba(79,110,247,0.08);
+  --shadow-md: 0 4px 24px rgba(79,110,247,0.12);
+  --shadow-lg: 0 8px 40px rgba(79,110,247,0.16);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+  --tr: 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+}
+
+/* ── HISTORY SIDEBAR ── */
+#history-sidebar {
+  width: 270px;
+  min-width: 270px;
+  height: 100vh;
+  background: var(--white);
+  border-right: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--tr), min-width var(--tr), transform var(--tr);
+  position: relative;
+  z-index: 20;
+  box-shadow: 2px 0 16px rgba(79,110,247,0.06);
+}
+#history-sidebar.collapsed { width: 0; min-width: 0; overflow: hidden; }
+
+.hs-header {
+  padding: 22px 20px 16px;
+  border-bottom: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hs-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hs-logo-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--accent), #7b8ff5);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 14px rgba(79,110,247,0.28);
+  flex-shrink: 0;
+}
+.hs-logo-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.hs-logo-sub { font-size: 10.5px; color: var(--text3); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.hs-collapse-btn {
+  width: 30px; height: 30px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text3);
+  transition: all var(--tr);
+  flex-shrink: 0;
+}
+.hs-collapse-btn:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+.hs-new-btn {
+  margin: 14px 16px 10px;
+  padding: 11px 16px;
+  background: linear-gradient(135deg, var(--accent), #6b80f5);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Nunito', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  transition: all var(--tr);
+  box-shadow: 0 4px 14px rgba(79,110,247,0.3);
+}
+.hs-new-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,110,247,0.38); }
+
+.hs-search {
+  margin: 0 16px 10px;
+  position: relative;
+}
+.hs-search input {
+  width: 100%;
+  padding: 9px 12px 9px 34px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--tr);
+}
+.hs-search input:focus { border-color: var(--accent); background: #fff; }
+.hs-search input::placeholder { color: var(--text3); }
+.hs-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text3); }
+
+.hs-section-label {
+  padding: 8px 20px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.hs-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hs-list::-webkit-scrollbar { width: 4px; }
+.hs-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+.history-item {
+  padding: 10px 12px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all var(--tr);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  position: relative;
+}
+.history-item:hover { background: var(--surface2); }
+.history-item.active { background: var(--accent-soft); border: 1.5px solid rgba(79,110,247,0.18); }
+.hi-flag { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.hi-body { flex: 1; min-width: 0; }
+.hi-title { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hi-preview { font-size: 11.5px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.hi-time { font-size: 10.5px; color: var(--text3); flex-shrink: 0; margin-top: 2px; }
+.hi-delete {
+  position: absolute; right: 6px; top: 6px;
+  width: 20px; height: 20px;
+  background: none; border: none;
+  border-radius: 4px; cursor: pointer;
+  font-size: 12px; color: var(--text3);
+  display: none; align-items: center; justify-content: center;
+  transition: all var(--tr);
+}
+.history-item:hover .hi-delete { display: flex; }
+.hi-delete:hover { background: #fee2e2; color: var(--accent3); }
+
+.hs-footer {
+  padding: 14px 16px;
+  border-top: 1.5px solid var(--border);
+}
+.hs-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text2);
+  transition: all var(--tr);
+}
+.hs-nav-item:hover { background: var(--surface2); color: var(--accent); }
+.hs-nav-item.active { background: var(--accent-soft); color: var(--accent); }
+
+/* ── MAIN AREA ── */
+#main {
+  flex: 1;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--border);
+  gap: 12px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(79,110,247,0.05);
+}
+.topbar-toggle {
+  width: 34px; height: 34px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; color: var(--text2);
+  transition: all var(--tr); flex-shrink: 0;
+}
+.topbar-toggle:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+.topbar-chat-name {
+  flex: 1;
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.topbar-lang-badge {
+  padding: 3px 10px;
+  background: var(--accent-soft);
+  border: 1.5px solid rgba(79,110,247,0.2);
+  border-radius: 20px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+.lang-selector {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 7px 12px;
+  transition: border-color var(--tr);
+  font-size: 13px;
+}
+.lang-selector:focus-within { border-color: var(--accent); }
+.lang-selector select {
+  background: transparent; border: none;
+  color: var(--text); font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; outline: none;
+}
+.lang-selector select option { background: #fff; }
+
+.btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  color: var(--text2);
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all var(--tr);
+  display: flex; align-items: center; gap: 6px;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.btn-accent {
+  background: linear-gradient(135deg, var(--accent), #6b80f5);
+  border-color: transparent; color: #fff;
+  box-shadow: 0 3px 12px rgba(79,110,247,0.28);
+}
+.btn-accent:hover { color: #fff; box-shadow: 0 5px 18px rgba(79,110,247,0.38); transform: translateY(-1px); }
+
+/* ── PAGES ── */
+.page { display: none; flex: 1; flex-direction: column; overflow: hidden; height: calc(100vh - 64px); }
+.page.active { display: flex; }
+
+/* ── CHAT PAGE ── */
+#chat-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  scroll-behavior: smooth;
+}
+#chat-scroll::-webkit-scrollbar { width: 5px; }
+#chat-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 5px; }
+
+.welcome-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 18px;
+  text-align: center;
+  padding: 40px 20px;
+  animation: fadeUp 0.5s ease both;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+.welcome-icon-ring {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px;
+  box-shadow: 0 0 0 12px rgba(79,110,247,0.08), 0 0 0 24px rgba(79,110,247,0.04);
+  animation: breathe 4s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100% { box-shadow: 0 0 0 12px rgba(79,110,247,0.08), 0 0 0 24px rgba(79,110,247,0.04); }
+  50% { box-shadow: 0 0 0 16px rgba(79,110,247,0.12), 0 0 0 32px rgba(79,110,247,0.05); }
+}
+.welcome-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px; font-weight: 700;
+  color: var(--text);
+}
+.welcome-title span { color: var(--accent); }
+.welcome-desc { color: var(--text2); font-size: 15px; max-width: 400px; line-height: 1.7; font-weight: 500; }
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+  max-width: 560px;
+  width: 100%;
+}
+.quick-card {
+  padding: 12px 14px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  transition: all var(--tr);
+  text-align: left;
+  box-shadow: var(--shadow);
+}
+.quick-card:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.quick-card-flag { font-size: 20px; margin-bottom: 6px; display: block; }
+.quick-card-lang { font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ── MESSAGES ── */
+.msg-wrap {
+  display: flex; gap: 12px;
+  animation: msgSlide 0.3s ease both;
+}
+@keyframes msgSlide { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.msg-wrap.user { flex-direction: row-reverse; }
+
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.avatar.ai {
+  background: linear-gradient(135deg, var(--accent), #7b8ff5);
+  box-shadow: 0 3px 12px rgba(79,110,247,0.25);
+}
+.avatar.user { background: var(--surface2); border: 1.5px solid var(--border); }
+
+.bubble {
+  max-width: 65%;
+  padding: 13px 18px;
+  border-radius: var(--radius);
+  line-height: 1.72;
+  font-size: 14.5px;
+  font-weight: 500;
+  position: relative;
+}
+.msg-wrap.ai .bubble {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-top-left-radius: 4px;
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+.msg-wrap.user .bubble {
+  background: linear-gradient(135deg, var(--accent), #6b80f5);
+  color: #fff;
+  border-top-right-radius: 4px;
+  box-shadow: 0 4px 16px rgba(79,110,247,0.3);
+}
+.msg-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 5px; font-size: 11px; color: var(--text3);
+}
+.msg-lang {
+  padding: 2px 9px;
+  background: var(--accent2-soft);
+  border: 1.5px solid rgba(34,201,160,0.2);
+  border-radius: 20px;
+  color: var(--accent2);
+  font-size: 10px; font-weight: 700;
+}
+
+/* ── TYPING ── */
+.typing-bubble {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  border-top-left-radius: 4px;
+  padding: 14px 20px;
+  display: flex; gap: 5px; align-items: center;
+  box-shadow: var(--shadow);
+}
+.td {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent);
+  animation: tdBounce 1.3s ease-in-out infinite;
+}
+.td:nth-child(2) { animation-delay: 0.18s; background: var(--accent2); }
+.td:nth-child(3) { animation-delay: 0.36s; background: var(--accent3); }
+@keyframes tdBounce { 0%,100%{ transform:translateY(0); opacity:0.5; } 50%{ transform:translateY(-7px); opacity:1; } }
+
+/* ── INPUT ── */
+.input-zone {
+  padding: 16px 24px 20px;
+  background: var(--white);
+  border-top: 1.5px solid var(--border);
+  flex-shrink: 0;
+}
+.input-box {
+  display: flex; align-items: flex-end; gap: 10px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  transition: all var(--tr);
+}
+.input-box:focus-within {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(79,110,247,0.09);
+}
+#chat-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14.5px; font-weight: 500; color: var(--text);
+  resize: none; max-height: 140px; line-height: 1.6; padding: 4px 0;
+}
+#chat-input::placeholder { color: var(--text3); }
+
+.voice-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--tr); flex-shrink: 0;
+  color: var(--text2);
+}
+.voice-btn:hover { border-color: var(--accent3); color: var(--accent3); background: #fff5f4; }
+.voice-btn.recording {
+  border-color: var(--accent3); background: #fff5f4;
+  animation: voicePulse 1s ease-in-out infinite;
+}
+@keyframes voicePulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(249,123,107,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(249,123,107,0); }
+}
+
+.send-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), #6b80f5);
+  color: #fff;
+  font-size: 17px;
+  cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--tr);
+  box-shadow: 0 4px 14px rgba(79,110,247,0.3);
+}
+.send-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(79,110,247,0.4); }
+.send-btn:disabled { opacity: 0.4; transform: none; cursor: not-allowed; }
+
+.input-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 9px; padding: 0 2px;
+}
+.input-hint { font-size: 11.5px; color: var(--text3); font-weight: 500; }
+.voice-status { font-size: 12px; color: var(--accent3); font-weight: 700; display: none; }
+.voice-status.show { display: block; }
+
+/* ── DASHBOARD PAGE ── */
+#page-dashboard {
+  overflow-y: auto;
+  padding: 28px;
+  gap: 22px;
+  background: var(--bg);
+}
+.db-header { display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
+.db-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; }
+.db-sub { color: var(--text2); font-size: 14px; margin-top: 4px; font-weight: 500; }
+
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.stat-card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition: all var(--tr);
+  position: relative; overflow: hidden;
+}
+.stat-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-card-accent { border-top: 3px solid var(--accent); }
+.stat-card-green { border-top: 3px solid var(--accent2); }
+.stat-card-red { border-top: 3px solid var(--accent3); }
+.stat-icon { font-size: 28px; margin-bottom: 10px; }
+.stat-num { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--text); }
+.stat-label { font-size: 12.5px; font-weight: 600; color: var(--text2); margin-top: 2px; }
+.stat-note { font-size: 11.5px; color: var(--accent); font-weight: 600; margin-top: 6px; }
+
+.sec-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 600;
+  margin-bottom: 14px; color: var(--text);
+}
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.lang-tile {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex; align-items: center; gap: 10px;
+  transition: all var(--tr); cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.lang-tile:hover { border-color: var(--accent); background: var(--accent-soft); }
+.lt-flag { font-size: 24px; }
+.lt-info { flex: 1; min-width: 0; }
+.lt-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.lt-code { font-size: 10.5px; color: var(--text3); font-weight: 600; }
+.lt-bar { height: 3px; background: var(--border2); border-radius: 3px; margin-top: 5px; }
+.lt-bar-fill { height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+.activity-log { display: flex; flex-direction: column; gap: 8px; }
+.al-item {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 11px 16px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--shadow);
+}
+.al-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+.al-text { flex: 1; font-size: 13.5px; font-weight: 500; }
+.al-time { font-size: 11.5px; color: var(--text3); font-weight: 600; }
+
+/* ── SETTINGS PAGE ── */
+#page-settings { overflow-y: auto; padding: 28px; gap: 20px; background: var(--bg); }
+.settings-card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.settings-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px; font-weight: 600;
+  padding-bottom: 14px;
+  border-bottom: 1.5px solid var(--border);
+}
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding-bottom: 16px; border-bottom: 1.5px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; padding-bottom: 0; }
+.setting-label { font-size: 14px; font-weight: 700; }
+.setting-desc { font-size: 12.5px; color: var(--text2); margin-top: 3px; }
+.field {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); padding: 10px 14px;
+  color: var(--text); font-family: 'Nunito', sans-serif;
+  font-size: 13.5px; font-weight: 500; outline: none;
+  transition: border-color var(--tr);
+}
+.field:focus { border-color: var(--accent); background: #fff; }
+.api-row { display: flex; gap: 10px; align-items: center; }
+.api-row .field { flex: 1; }
+.status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+}
+.pill-ok { background: rgba(34,201,160,0.1); border: 1.5px solid rgba(34,201,160,0.25); color: var(--accent2); }
+.pill-err { background: #fff1f0; border: 1.5px solid rgba(249,123,107,0.3); color: var(--accent3); }
+.pill-idle { background: var(--surface2); border: 1.5px solid var(--border); color: var(--text3); }
+.toggle {
+  width: 46px; height: 26px;
+  background: var(--border2); border-radius: 13px;
+  cursor: pointer; position: relative; transition: background var(--tr); flex-shrink: 0;
+}
+.toggle.on { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.toggle::after {
+  content: ''; position: absolute;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; top: 3px; left: 3px;
+  transition: left var(--tr); box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.toggle.on::after { left: 23px; }
+
+/* ── VOICE MODAL ── */
+#voice-modal {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(26,29,46,0.35);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+#voice-modal.show { display: flex; }
+.voice-modal-box {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 40px 36px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  width: 320px;
+  border: 1.5px solid var(--border);
+  animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes popIn { from { transform: scale(0.85); opacity:0; } to { transform: scale(1); opacity:1; } }
+.vm-ring {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent3), #ffb3a9);
+  margin: 0 auto 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  box-shadow: 0 0 0 14px rgba(249,123,107,0.1);
+  animation: vmPulse 1.2s ease-in-out infinite;
+}
+@keyframes vmPulse {
+  0%,100% { box-shadow: 0 0 0 14px rgba(249,123,107,0.1); }
+  50% { box-shadow: 0 0 0 22px rgba(249,123,107,0.05); }
+}
+.vm-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.vm-sub { font-size: 14px; color: var(--text2); font-weight: 500; margin-bottom: 20px; }
+.vm-transcript {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); padding: 12px 16px;
+  min-height: 50px; font-size: 14px; color: var(--text);
+  margin-bottom: 18px; line-height: 1.6; font-weight: 500;
+}
+.vm-btns { display: flex; gap: 10px; }
+.vm-btn { flex: 1; padding: 11px; border-radius: var(--radius-xs); font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all var(--tr); border: 1.5px solid transparent; }
+.vm-cancel { background: var(--surface2); border-color: var(--border); color: var(--text2); }
+.vm-cancel:hover { border-color: var(--accent3); color: var(--accent3); }
+.vm-use { background: linear-gradient(135deg, var(--accent), #6b80f5); color: #fff; box-shadow: 0 4px 14px rgba(79,110,247,0.3); }
+.vm-use:hover { box-shadow: 0 6px 20px rgba(79,110,247,0.4); }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 26px; right: 26px;
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); padding: 12px 20px;
+  font-size: 13.5px; font-weight: 600;
+  box-shadow: var(--shadow-lg); z-index: 999;
+  opacity: 0; transform: translateY(8px);
+  transition: all 0.28s ease; pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+#toast.ok { border-color: rgba(34,201,160,0.35); color: var(--accent2); }
+#toast.err { border-color: rgba(249,123,107,0.35); color: var(--accent3); }
+</style>
+</head>
+<body>
+
+<!-- ── HISTORY SIDEBAR ── -->
+<div id="history-sidebar">
+  <div class="hs-header">
+    <div class="hs-logo">
+      <div class="hs-logo-icon">🌐</div>
+      <div>
+        <div class="hs-logo-name">LinguaBot</div>
+        <div class="hs-logo-sub">Multilingual AI</div>
+      </div>
+    </div>
+    <div class="hs-collapse-btn" onclick="toggleSidebar()">◀</div>
+  </div>
+
+  <button class="hs-new-btn" onclick="newChat()">✨ New Conversation</button>
+
+  <div style="margin: 0 16px 10px; display:flex; align-items:center; justify-content:space-between;">
+    <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;">Saved Chats</span>
+    <span id="saved-count-badge" style="background:var(--accent-soft);border:1.5px solid rgba(79,110,247,0.2);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700;color:var(--accent);">0</span>
+  </div>
+
+  <div class="hs-search">
+    <span class="hs-search-icon">🔍</span>
+    <input type="text" placeholder="Search chats…" id="history-search" oninput="filterHistory(this.value)" />
+  </div>
+
+  <div class="hs-section-label">Today</div>
+  <div class="hs-list" id="history-list">
+    <!-- filled by JS -->
+  </div>
+
+  <div class="hs-footer">
+    <div class="hs-nav-item active" onclick="navTo('chat')" id="fnav-chat">💬 Chat</div>
+    <div class="hs-nav-item" onclick="navTo('dashboard')" id="fnav-dashboard">📊 Dashboard</div>
+    <div class="hs-nav-item" onclick="navTo('settings')" id="fnav-settings">⚙️ Settings</div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div id="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-toggle" onclick="toggleSidebar()">☰</div>
+    <div class="topbar-chat-name" id="topbar-title">
+      LinguaBot
+      <span class="topbar-lang-badge" id="topbar-lang">Auto Detect</span>
+    </div>
+
+    <div class="lang-selector">
+      🌐
+      <select id="lang-select" onchange="changeLang()">
+        <option value="auto">Auto Detect</option>
+        <option value="en">🇬🇧 English</option>
+        <option value="es">🇪🇸 Spanish</option>
+        <option value="fr">🇫🇷 French</option>
+        <option value="de">🇩🇪 German</option>
+        <option value="it">🇮🇹 Italian</option>
+        <option value="pt">🇧🇷 Portuguese</option>
+        <option value="zh">🇨🇳 Chinese</option>
+        <option value="ja">🇯🇵 Japanese</option>
+        <option value="ko">🇰🇷 Korean</option>
+        <option value="ar">🇸🇦 Arabic</option>
+        <option value="hi">🇮🇳 Hindi</option>
+        <option value="ta">🇮🇳 Tamil</option>
+        <option value="ru">🇷🇺 Russian</option>
+        <option value="nl">🇳🇱 Dutch</option>
+        <option value="tr">🇹🇷 Turkish</option>
+      </select>
+    </div>
+    <button class="btn" onclick="manualSaveChat()">💾 Save Chat</button>
+    <button class="btn" onclick="exportChat()">⬇ Export</button>
+    <button class="btn btn-accent" onclick="navTo('settings')">🔑 API Key</button>
+  </div>
+
+  <!-- CHAT PAGE -->
+  <div class="page active" id="page-chat">
+    <div id="chat-scroll">
+      <div class="welcome-wrap" id="welcome-wrap">
+        <div class="welcome-icon-ring">🌐</div>
+        <div class="welcome-title">Meet <span>LinguaBot</span></div>
+        <div class="welcome-desc">Your intelligent multilingual companion. Chat naturally in any of 15+ languages — or let me detect yours automatically.</div>
+        <div class="quick-grid">
+          <div class="quick-card" onclick="quickSend('¡Hola! ¿Cómo estás hoy?')">
+            <span class="quick-card-flag">🇪🇸</span>
+            <div>¡Hola!</div>
+            <div class="quick-card-lang">Spanish</div>
+          </div>
+          <div class="quick-card" onclick="quickSend('Bonjour! Comment allez-vous?')">
+            <span class="quick-card-flag">🇫🇷</span>
+            <div>Bonjour!</div>
+            <div class="quick-card-lang">French</div>
+          </div>
+          <div class="quick-card" onclick="quickSend('こんにちは！今日はいい天気ですね')">
+            <span class="quick-card-flag">🇯🇵</span>
+            <div>こんにちは!</div>
+            <div class="quick-card-lang">Japanese</div>
+          </div>
+          <div class="quick-card" onclick="quickSend('வணக்கம்! நீங்கள் எப்படி இருக்கிறீர்கள்?')">
+            <span class="quick-card-flag">🇮🇳</span>
+            <div>வணக்கம்!</div>
+            <div class="quick-card-lang">Tamil</div>
+          </div>
+          <div class="quick-card" onclick="quickSend('नमस्ते! आप कैसे हैं?')">
+            <span class="quick-card-flag">🇮🇳</span>
+            <div>नमस्ते!</div>
+            <div class="quick-card-lang">Hindi</div>
+          </div>
+          <div class="quick-card" onclick="quickSend('안녕하세요! 오늘 기분이 어떠세요?')">
+            <span class="quick-card-flag">🇰🇷</span>
+            <div>안녕하세요!</div>
+            <div class="quick-card-lang">Korean</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-zone">
+      <div class="input-box">
+        <textarea id="chat-input" rows="1" placeholder="Type in any language, or use voice…"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="voice-btn" id="voice-btn" onclick="startVoice()" title="Voice Input">🎤</button>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+      <div class="input-footer">
+        <span class="input-hint">Enter to send · Shift+Enter for new line · 🎤 for voice</span>
+        <span class="voice-status" id="voice-status">🔴 Listening…</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page" id="page-dashboard" style="display:none;flex-direction:column;">
+    <div style="flex:1;overflow-y:auto;padding:28px;display:flex;flex-direction:column;gap:22px;background:var(--bg);">
+      <div class="db-header">
+        <div>
+          <div class="db-title">Dashboard</div>
+          <div class="db-sub">Your LinguaBot session at a glance</div>
+        </div>
+        <button class="btn btn-accent" onclick="refreshDashboard()">↻ Refresh</button>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card stat-card-accent">
+          <div class="stat-icon">💬</div>
+          <div class="stat-num" id="d-msgs">0</div>
+          <div class="stat-label">Messages Sent</div>
+          <div class="stat-note">This session</div>
+        </div>
+        <div class="stat-card stat-card-green">
+          <div class="stat-icon">🌐</div>
+          <div class="stat-num">15</div>
+          <div class="stat-label">Languages</div>
+          <div class="stat-note">Always growing</div>
+        </div>
+        <div class="stat-card stat-card-accent">
+          <div class="stat-icon">🎤</div>
+          <div class="stat-num" id="d-voice">0</div>
+          <div class="stat-label">Voice Messages</div>
+          <div class="stat-note">Via microphone</div>
+        </div>
+        <div class="stat-card stat-card-green">
+          <div class="stat-icon">💾</div>
+          <div class="stat-num" id="d-saved">0</div>
+          <div class="stat-label">Saved Chats</div>
+          <div class="stat-note">Stored locally</div>
+        </div>
+        <div class="stat-card stat-card-green">
+          <div class="stat-icon">🤖</div>
+          <div class="stat-num" id="d-model">–</div>
+          <div class="stat-label">Active Model</div>
+          <div class="stat-note">Groq powered</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-title">🌍 Supported Languages</div>
+        <div class="lang-grid" id="dash-lang-grid"></div>
+      </div>
+
+      <div>
+        <div class="sec-title">🕐 Activity Log</div>
+        <div class="activity-log" id="activity-log">
+          <div class="al-item"><div class="al-dot"></div><div class="al-text">LinguaBot session started</div><div class="al-time">Just now</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div class="page" id="page-settings" style="display:none;flex-direction:column;">
+    <div style="flex:1;overflow-y:auto;padding:28px;display:flex;flex-direction:column;gap:20px;max-width:700px;background:var(--bg);">
+
+      <div>
+        <div class="db-title">Settings</div>
+        <div class="db-sub">Configure your LinguaBot experience</div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-title">🔑 Groq API Key</div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">API Key</div>
+            <div class="setting-desc">Stored in session memory only — never sent anywhere except Groq.</div>
+          </div>
+        </div>
+        <div class="api-row">
+          <input class="field" type="password" id="api-key-input" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx" />
+          <button class="btn btn-accent" onclick="saveKey()">Save</button>
+          <button class="btn" onclick="testKey()">Test</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+          <span class="status-pill pill-idle" id="key-status">● Not configured</span>
+          <span id="key-info" style="font-size:12px;color:var(--text3);font-weight:600;"></span>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-title">🤖 Model & Behaviour</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Model</div><div class="setting-desc">Which Groq model to use.</div></div>
+          <select class="field" id="s-model" style="width:220px;" onchange="currentModel=this.value">
+            <option value="llama-3.3-70b-versatile">Llama 3.3 70B ⭐</option>
+            <option value="llama-3.1-8b-instant">Llama 3.1 8B (Fast)</option>
+            <option value="mixtral-8x7b-32768">Mixtral 8×7B</option>
+            <option value="gemma2-9b-it">Gemma 2 9B</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Temperature <span id="s-temp-val" style="color:var(--accent)">0.7</span></div><div class="setting-desc">Higher = more creative responses.</div></div>
+          <input type="range" min="0" max="2" step="0.1" value="0.7" id="s-temp"
+            style="width:120px;accent-color:var(--accent);" oninput="document.getElementById('s-temp-val').textContent=this.value" />
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Max Tokens</div><div class="setting-desc">Maximum response length.</div></div>
+          <select class="field" id="s-tokens" style="width:140px;">
+            <option value="512">512 — Short</option>
+            <option value="1024" selected>1024 — Default</option>
+            <option value="2048">2048 — Long</option>
+            <option value="4096">4096 — Very Long</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-title">🌐 Language & Voice</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Default Response Language</div><div class="setting-desc">Language LinguaBot replies in.</div></div>
+          <select class="field" id="s-deflang" style="width:170px;">
+            <option value="auto">Auto Detect</option>
+            <option value="en">English</option><option value="es">Spanish</option>
+            <option value="fr">French</option><option value="de">German</option>
+            <option value="it">Italian</option><option value="pt">Portuguese</option>
+            <option value="zh">Chinese</option><option value="ja">Japanese</option>
+            <option value="ko">Korean</option><option value="ar">Arabic</option>
+            <option value="hi">Hindi</option><option value="ta">Tamil</option>
+            <option value="ru">Russian</option><option value="nl">Dutch</option>
+            <option value="tr">Turkish</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Voice Input</div><div class="setting-desc">Use microphone for speech-to-text.</div></div>
+          <div class="toggle on" id="toggle-voice" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Show Language Badge</div><div class="setting-desc">Display language tag on AI replies.</div></div>
+          <div class="toggle on" id="toggle-badge" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-title">⚠️ Data</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Clear Session</div><div class="setting-desc">Wipe all chat history and settings.</div></div>
+          <button class="btn" style="color:var(--accent3);border-color:rgba(249,123,107,0.3);" onclick="clearAll()">🗑 Clear All</button>
+        </div>
+      </div>
+
+      <button class="btn btn-accent" style="width:100%;justify-content:center;padding:14px;font-size:15px;" onclick="saveSettings()">
+        💾 Save Settings
+      </button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- VOICE MODAL -->
+<div id="voice-modal">
+  <div class="voice-modal-box">
+    <div class="vm-ring">🎤</div>
+    <div class="vm-title">Listening…</div>
+    <div class="vm-sub">Speak clearly in any language</div>
+    <div class="vm-transcript" id="vm-transcript">Waiting for speech…</div>
+    <div class="vm-btns">
+      <button class="vm-btn vm-cancel" onclick="cancelVoice()">✕ Cancel</button>
+      <button class="vm-btn vm-use" onclick="useTranscript()">✓ Use This</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── STATE ──
+let apiKey = '';
+let currentModel = 'llama-3.3-70b-versatile';
+let currentLang = 'auto';
+let chatHistory = [];
+let allChatSessions = [];
+let currentSessionId = null;
+let totalMsgs = 0;
+let voiceMsgs = 0;
+let isTyping = false;
+let recognition = null;
+let voiceTranscript = '';
+let sidebarOpen = true;
+
+const LANGS = [
+  {code:'en',name:'English',flag:'🇬🇧',pct:95},
+  {code:'es',name:'Spanish',flag:'🇪🇸',pct:90},
+  {code:'fr',name:'French',flag:'🇫🇷',pct:88},
+  {code:'de',name:'German',flag:'🇩🇪',pct:87},
+  {code:'it',name:'Italian',flag:'🇮🇹',pct:85},
+  {code:'pt',name:'Portuguese',flag:'🇧🇷',pct:84},
+  {code:'zh',name:'Chinese',flag:'🇨🇳',pct:83},
+  {code:'ja',name:'Japanese',flag:'🇯🇵',pct:82},
+  {code:'ko',name:'Korean',flag:'🇰🇷',pct:80},
+  {code:'ar',name:'Arabic',flag:'🇸🇦',pct:78},
+  {code:'hi',name:'Hindi',flag:'🇮🇳',pct:77},
+  {code:'ta',name:'Tamil',flag:'🇮🇳',pct:74},
+  {code:'ru',name:'Russian',flag:'🇷🇺',pct:80},
+  {code:'nl',name:'Dutch',flag:'🇳🇱',pct:76},
+  {code:'tr',name:'Turkish',flag:'🇹🇷',pct:73},
+];
+
+// ── INIT ──
+function init() {
+  buildDashLangs();
+  loadPersistedData();
+  newSession();
+  setupVoice();
+  renderHistoryList();
+}
+
+function loadPersistedData() {
+  // Load API key
+  const k = localStorage.getItem('lb_key');
+  if (k) {
+    apiKey = k;
+    document.getElementById('api-key-input').value = k;
+    setPillStatus('ok');
+    document.getElementById('key-info').textContent = k.slice(0,8)+'···';
+  }
+  // Load saved chat sessions
+  try {
+    const saved = localStorage.getItem('lb_sessions');
+    if (saved) allChatSessions = JSON.parse(saved);
+  } catch(e) { allChatSessions = []; }
+  // Load settings
+  const model = localStorage.getItem('lb_model');
+  if (model) { currentModel = model; const el = document.getElementById('s-model'); if (el) el.value = model; }
+  const lang = localStorage.getItem('lb_lang');
+  if (lang) { currentLang = lang; const el = document.getElementById('lang-select'); if (el) el.value = lang; const sel = document.getElementById('s-deflang'); if (sel) sel.value = lang; updateLangBadge(); }
+}
+
+function checkStoredKey() {
+  if (apiKey) return;
+  const k = localStorage.getItem('lb_key');
+  if (k) { apiKey = k; setPillStatus('ok'); }
+}
+
+function persistSessions() {
+  try { localStorage.setItem('lb_sessions', JSON.stringify(allChatSessions)); } catch(e) {}
+}
+
+// ── SIDEBAR ──
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  document.getElementById('history-sidebar').classList.toggle('collapsed', !sidebarOpen);
+}
+
+// ── NAV ──
+function navTo(page) {
+  document.querySelectorAll('.page').forEach(p => { p.style.display = 'none'; p.classList.remove('active'); });
+  const pg = document.getElementById('page-' + page);
+  if (pg) { pg.style.display = 'flex'; pg.classList.add('active'); }
+  document.querySelectorAll('.hs-nav-item').forEach(n => n.classList.remove('active'));
+  const fn = document.getElementById('fnav-' + page);
+  if (fn) fn.classList.add('active');
+  if (page === 'dashboard') refreshDashboard();
+}
+
+// ── SESSIONS / HISTORY ──
+function newSession() {
+  if (chatHistory.length && currentSessionId) {
+    const first = chatHistory.find(m => m.role === 'user');
+    saveCurrentSession(first ? first.content.slice(0,40) : 'New chat');
+  }
+  currentSessionId = Date.now();
+  chatHistory = [];
+  totalMsgs = 0;
+  const scroll = document.getElementById('chat-scroll');
+  scroll.innerHTML = '';
+  const ww = document.createElement('div');
+  ww.className = 'welcome-wrap'; ww.id = 'welcome-wrap';
+  ww.innerHTML = `
+    <div class="welcome-icon-ring">🌐</div>
+    <div class="welcome-title">Meet <span>LinguaBot</span></div>
+    <div class="welcome-desc">Your intelligent multilingual companion. Chat naturally in any of 15+ languages.</div>
+    <div class="quick-grid">
+      <div class="quick-card" onclick="quickSend('¡Hola! ¿Cómo estás hoy?')"><span class="quick-card-flag">🇪🇸</span><div>¡Hola!</div><div class="quick-card-lang">Spanish</div></div>
+      <div class="quick-card" onclick="quickSend('Bonjour! Comment allez-vous?')"><span class="quick-card-flag">🇫🇷</span><div>Bonjour!</div><div class="quick-card-lang">French</div></div>
+      <div class="quick-card" onclick="quickSend('こんにちは！元気ですか？')"><span class="quick-card-flag">🇯🇵</span><div>こんにちは!</div><div class="quick-card-lang">Japanese</div></div>
+      <div class="quick-card" onclick="quickSend('வணக்கம்! நீங்கள் எப்படி இருக்கிறீர்கள்?')"><span class="quick-card-flag">🇮🇳</span><div>வணக்கம்!</div><div class="quick-card-lang">Tamil</div></div>
+      <div class="quick-card" onclick="quickSend('नमस्ते! आप कैसे हैं?')"><span class="quick-card-flag">🇮🇳</span><div>नमस्ते!</div><div class="quick-card-lang">Hindi</div></div>
+      <div class="quick-card" onclick="quickSend('안녕하세요! 오늘 기분이 어떠세요?')"><span class="quick-card-flag">🇰🇷</span><div>안녕하세요!</div><div class="quick-card-lang">Korean</div></div>
+    </div>
+  `;
+  scroll.appendChild(ww);
+}
+
+function newChat() { newSession(); navTo('chat'); }
+
+function saveCurrentSession(title) {
+  if (!chatHistory.length) return;
+  const lang = LANGS.find(l => l.code === currentLang) || {flag:'🌐', name:'Auto'};
+  const session = {
+    id: currentSessionId,
+    title: title || 'Untitled Chat',
+    flag: lang.flag,
+    preview: chatHistory.slice(-1)[0]?.content?.slice(0,60) || '',
+    time: formatTime(),
+    date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}),
+    history: [...chatHistory],
+    lang: currentLang
+  };
+  const idx = allChatSessions.findIndex(s => s.id === currentSessionId);
+  if (idx >= 0) allChatSessions[idx] = session;
+  else allChatSessions.unshift(session);
+  persistSessions();
+  renderHistoryList();
+}
+
+// Auto-save current chat after every reply
+function autoSaveCurrentChat() {
+  if (!chatHistory.length || !currentSessionId) return;
+  const first = chatHistory.find(m => m.role === 'user');
+  saveCurrentSession(first ? first.content.slice(0,40) : 'New chat');
+}
+
+function persistSessions() {
+  try { localStorage.setItem('lb_sessions', JSON.stringify(allChatSessions.slice(0, 50))); } catch(e) {}
+}
+
+function renderHistoryList(filter = '') {
+  const list = document.getElementById('history-list');
+  const items = allChatSessions.filter(s => !filter || s.title.toLowerCase().includes(filter));
+  if (!items.length) {
+    list.innerHTML = `<div style="padding:20px 16px;font-size:13px;color:var(--text3);text-align:center;line-height:1.6;">No saved chats yet.<br>Start chatting to auto-save!</div>`;
+    return;
+  }
+  // Group by date
+  let lastDate = '';
+  list.innerHTML = items.map((s, i) => {
+    let dateHeader = '';
+    if (s.date && s.date !== lastDate) {
+      lastDate = s.date;
+      dateHeader = `<div class="hs-section-label" style="margin-top:8px;">${s.date}</div>`;
+    }
+    return `${dateHeader}
+    <div class="history-item ${s.id === currentSessionId ? 'active' : ''}" onclick="loadSession_${i}()" id="hi-${i}">
+      <div class="hi-flag">${s.flag}</div>
+      <div class="hi-body">
+        <div class="hi-title">${escHtml(s.title)}</div>
+        <div class="hi-preview">${escHtml(s.preview)}</div>
+      </div>
+      <div>
+        <div class="hi-time">${s.time}</div>
+        <button class="hi-delete" onclick="deleteSession(${i}, event)" title="Delete">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  items.forEach((s, i) => { window['loadSession_'+i] = function() { restoreSession(s); }; });
+}
+
+function restoreSession(s) {
+  currentSessionId = s.id;
+  chatHistory = [...s.history];
+  currentLang = s.lang || 'auto';
+  document.getElementById('lang-select').value = currentLang;
+  updateLangBadge();
+  const scroll = document.getElementById('chat-scroll');
+  scroll.innerHTML = '';
+  chatHistory.forEach(m => renderMsg(m.role, m.content));
+  navTo('chat');
+  renderHistoryList();
+  toast('Chat restored! 📂', 'ok');
+}
+
+function deleteSession(idx, e) {
+  e.stopPropagation();
+  if (!confirm('Delete this chat?')) return;
+  allChatSessions.splice(idx, 1);
+  persistSessions();
+  renderHistoryList();
+  toast('Chat deleted', 'ok');
+}
+
+function filterHistory(val) { renderHistoryList(val.toLowerCase()); }
+
+// ── LANGUAGE ──
+function changeLang() {
+  currentLang = document.getElementById('lang-select').value;
+  updateLangBadge();
+}
+
+function updateLangBadge() {
+  const el = document.getElementById('topbar-lang');
+  if (currentLang === 'auto') { el.textContent = 'Auto Detect'; return; }
+  const l = LANGS.find(x => x.code === currentLang);
+  el.textContent = l ? `${l.flag} ${l.name}` : currentLang.toUpperCase();
+}
+
+// ── CHAT ──
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+function autoResize(t) { t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 140)+'px'; }
+function quickSend(txt) { document.getElementById('chat-input').value = txt; sendMessage(); }
+
+async function sendMessage() {
+  if (isTyping) return;
+  const inp = document.getElementById('chat-input');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  if (!apiKey) { toast('⚠ Set your Groq API key in Settings first!', 'err'); navTo('settings'); return; }
+  removeWelcome();
+  inp.value = ''; inp.style.height = 'auto';
+  chatHistory.push({role:'user', content:txt});
+  renderMsg('user', txt);
+  totalMsgs++;
+  showTyping(); isTyping = true; document.getElementById('send-btn').disabled = true;
+  try {
+    const reply = await callGroq();
+    hideTyping();
+    chatHistory.push({role:'assistant', content:reply});
+    renderMsg('ai', reply);
+    totalMsgs++;
+    addActivity(`Replied in ${getLangName(currentLang)}`);
+    autoSaveCurrentChat();
+  } catch(err) {
+    hideTyping();
+    renderMsg('ai', `❌ Error: ${err.message}. Check your API key in Settings.`);
+  }
+  isTyping = false; document.getElementById('send-btn').disabled = false;
+  inp.focus();
+}
+
+async function callGroq() {
+  const langStr = currentLang === 'auto'
+    ? 'Detect the language of the user and respond naturally in the same language.'
+    : `Always respond in ${getLangName(currentLang)}.`;
+  const sys = `You are LinguaBot, a friendly, helpful multilingual AI assistant. ${langStr} Keep responses clear, warm, and culturally appropriate. Be concise but thorough.`;
+  const temp = parseFloat(document.getElementById('s-temp')?.value || '0.7');
+  const maxTok = parseInt(document.getElementById('s-tokens')?.value || '1024');
+  const msgs = chatHistory.slice(-14);
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${apiKey}` },
+    body: JSON.stringify({ model: currentModel, messages: [{role:'system',content:sys}, ...msgs], temperature: temp, max_tokens: maxTok })
+  });
+  if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content || '(No response)';
+}
+
+function renderMsg(role, text) {
+  const scroll = document.getElementById('chat-scroll');
+  const showBadge = document.getElementById('toggle-badge')?.classList.contains('on');
+  const lang = LANGS.find(l => l.code === currentLang);
+  const wrap = document.createElement('div');
+  wrap.className = `msg-wrap ${role}`;
+  wrap.innerHTML = `
+    <div class="avatar ${role}">${role==='ai'?'🌐':'👤'}</div>
+    <div>
+      <div class="bubble">${escHtml(text)}</div>
+      <div class="msg-meta">
+        ${role==='ai' && showBadge && lang ? `<span class="msg-lang">${lang.flag} ${lang.name}</span>` : ''}
+        <span>${formatTime()}</span>
+        ${role==='ai' ? `<span>· ${modelShort()}</span>` : ''}
+      </div>
+    </div>
+  `;
+  scroll.appendChild(wrap);
+  scroll.scrollTop = scroll.scrollHeight;
+}
+
+function removeWelcome() { const w = document.getElementById('welcome-wrap'); if (w) w.remove(); }
+function showTyping() {
+  const scroll = document.getElementById('chat-scroll');
+  const d = document.createElement('div'); d.className = 'msg-wrap ai'; d.id = 'typing-indicator';
+  d.innerHTML = `<div class="avatar ai">🌐</div><div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+  scroll.appendChild(d); scroll.scrollTop = scroll.scrollHeight;
+}
+function hideTyping() { const t = document.getElementById('typing-indicator'); if (t) t.remove(); }
+
+function exportChat() {
+  if (!chatHistory.length) { toast('No messages to export!', 'err'); return; }
+  const lines = chatHistory.map(m => `[${m.role.toUpperCase()}]: ${m.content}`).join('\n\n');
+  const blob = new Blob([`LinguaBot Chat Export\n${'─'.repeat(40)}\n\n${lines}`], {type:'text/plain'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `linguabot_${Date.now()}.txt`; a.click();
+  toast('Chat exported! ⬇', 'ok');
+}
+
+// ── VOICE ──
+function setupVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return;
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.onresult = (e) => {
+    let interim = '', final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    voiceTranscript = final || interim;
+    document.getElementById('vm-transcript').textContent = voiceTranscript || 'Listening…';
+  };
+  recognition.onend = () => {
+    document.getElementById('voice-btn').classList.remove('recording');
+    document.getElementById('voice-status').classList.remove('show');
+  };
+  recognition.onerror = (e) => {
+    cancelVoice();
+    toast('Voice error: ' + e.error, 'err');
+  };
+}
+
+function startVoice() {
+  const voiceEnabled = document.getElementById('toggle-voice')?.classList.contains('on');
+  if (!voiceEnabled) { toast('Voice input is disabled in Settings.', 'err'); return; }
+  if (!recognition) { toast('Voice recognition not supported in this browser.', 'err'); return; }
+  voiceTranscript = '';
+  document.getElementById('vm-transcript').textContent = 'Listening…';
+  document.getElementById('voice-modal').classList.add('show');
+  document.getElementById('voice-btn').classList.add('recording');
+  document.getElementById('voice-status').classList.add('show');
+  if (currentLang !== 'auto') recognition.lang = currentLang;
+  recognition.start();
+  voiceMsgs++;
+}
+
+function cancelVoice() {
+  if (recognition) try { recognition.stop(); } catch(e) {}
+  document.getElementById('voice-modal').classList.remove('show');
+  document.getElementById('voice-btn').classList.remove('recording');
+  document.getElementById('voice-status').classList.remove('show');
+}
+
+function useTranscript() {
+  if (recognition) try { recognition.stop(); } catch(e) {}
+  document.getElementById('voice-modal').classList.remove('show');
+  document.getElementById('voice-btn').classList.remove('recording');
+  document.getElementById('voice-status').classList.remove('show');
+  if (voiceTranscript.trim()) {
+    document.getElementById('chat-input').value = voiceTranscript;
+    sendMessage();
+  }
+}
+
+// ── SETTINGS ──
+function saveKey() {
+  const k = document.getElementById('api-key-input').value.trim();
+  if (!k) { toast('Enter a key first!', 'err'); return; }
+  if (!k.startsWith('gsk_')) { toast('⚠ Key should start with gsk_', 'err'); return; }
+  apiKey = k;
+  localStorage.setItem('lb_key', k);
+  setPillStatus('ok');
+  document.getElementById('key-info').textContent = k.slice(0,8)+'···';
+  toast('API Key saved! ✅', 'ok');
+}
+
+async function testKey() {
+  const k = document.getElementById('api-key-input').value.trim();
+  if (!k) { toast('Enter a key first!', 'err'); return; }
+  setPillStatus('idle'); document.getElementById('key-status').textContent = '● Testing…';
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/models', { headers: { 'Authorization': `Bearer ${k}` } });
+    if (r.ok) { setPillStatus('ok'); toast('API Key valid! ✅', 'ok'); }
+    else { setPillStatus('err'); toast('Invalid API Key ❌', 'err'); }
+  } catch(e) { setPillStatus('err'); toast('Connection error ❌', 'err'); }
+}
+
+function setPillStatus(state) {
+  const el = document.getElementById('key-status');
+  el.className = `status-pill pill-${state}`;
+  el.textContent = state==='ok' ? '● Connected' : state==='err' ? '● Invalid Key' : '● Not configured';
+}
+
+function saveSettings() {
+  currentModel = document.getElementById('s-model').value;
+  currentLang = document.getElementById('s-deflang').value;
+  document.getElementById('lang-select').value = currentLang;
+  updateLangBadge();
+  localStorage.setItem('lb_model', currentModel);
+  localStorage.setItem('lb_lang', currentLang);
+  toast('Settings saved! 💾', 'ok');
+}
+
+function clearAll() {
+  if (!confirm('This will permanently delete all saved chats, your API key, and settings. Continue?')) return;
+  localStorage.clear(); apiKey = ''; chatHistory = []; allChatSessions = []; totalMsgs = 0; voiceMsgs = 0;
+  document.getElementById('api-key-input').value = '';
+  setPillStatus('idle'); document.getElementById('key-info').textContent = '';
+  newSession(); renderHistoryList();
+  toast('All data cleared!', 'ok');
+}
+
+function manualSaveChat() {
+  if (!chatHistory.length) { toast('Nothing to save yet — start chatting first!', 'err'); return; }
+  autoSaveCurrentChat();
+  toast('Chat saved! 💾', 'ok');
+}
+
+// ── DASHBOARD ──
+function refreshDashboard() {
+  document.getElementById('d-msgs').textContent = totalMsgs;
+  document.getElementById('d-voice').textContent = voiceMsgs;
+  document.getElementById('d-model').textContent = modelShort();
+  const el = document.getElementById('d-saved');
+  if (el) el.textContent = allChatSessions.length;
+}
+
+function addActivity(text) {
+  const log = document.getElementById('activity-log');
+  if (!log) return;
+  const d = document.createElement('div'); d.className = 'al-item';
+  d.innerHTML = `<div class="al-dot"></div><div class="al-text">${text}</div><div class="al-time">${formatTime()}</div>`;
+  log.insertBefore(d, log.firstChild);
+  if (log.children.length > 8) log.removeChild(log.lastChild);
+}
+
+function buildDashLangs() {
+  const g = document.getElementById('dash-lang-grid');
+  if (!g) return;
+  g.innerHTML = LANGS.map(l => `
+    <div class="lang-tile">
+      <div class="lt-flag">${l.flag}</div>
+      <div class="lt-info">
+        <div class="lt-name">${l.name}</div>
+        <div class="lt-code">${l.code.toUpperCase()} · ${l.pct}%</div>
+        <div class="lt-bar"><div class="lt-bar-fill" style="width:${l.pct}%"></div></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── UTILS ──
+function getLangName(code) { const l = LANGS.find(x=>x.code===code); return l ? l.name : 'Auto'; }
+function modelShort() {
+  if (currentModel.includes('70b')) return '70B'; if (currentModel.includes('8b')) return '8B';
+  if (currentModel.includes('mixtral')) return 'Mixtral'; if (currentModel.includes('gemma')) return 'Gemma';
+  return currentModel.split('-')[0];
+}
+function formatTime() { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+function escHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast'); t.textContent = msg;
+  t.className = `show ${type}`; setTimeout(()=>t.className='', 3200);
+}
+
+init();
+</script>
+</body>
+</html>
