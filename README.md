@@ -25,9 +25,6 @@ A multilingual chatbot supporting **15+ languages** powered by the **Groq API**.
 - Prompt Engineering for language detection
 - Dialogue State Tracking (context window)
 
-## 👩‍💻 Team
-- SIVA KALYANI S — URK23CS7036
-- MARIA DELPHINE A — URK23CS7028
 
 ## 🛠️ Tech Stack
 | Layer | Technology |
