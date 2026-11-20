@@ -4,7 +4,7 @@ A multilingual chatbot supporting **12 languages** powered by the **Groq API**.
 
 
 ## ✨ Features
-- 💬 Chat in 12 languages (Tamil, Hindi, Arabic, Japanese, Korean & more)
+- 💬 Chat in 12 different languages (Tamil, Hindi, Arabic, Japanese, Korean & more)
 - 🔍 Auto language detection using prompt engineering
 - 🎤 Voice input via Web Speech API
 - 💾 Persistent chat history (localStorage)
