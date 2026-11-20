@@ -1,6 +1,6 @@
 # 🌐 LinguaBot — Multilingual AI Chatbot
 
-A multilingual chatbot supporting **15+ languages** powered by the **Groq API**.
+A multilingual chatbot supporting **12 languages** powered by the **Groq API**.
 
 
 ## ✨ Features
